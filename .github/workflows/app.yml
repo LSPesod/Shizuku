@@ -52,3 +52,12 @@ jobs:
           name: ${{ steps.buildWithGradle.outputs.releaseName }}
           path: "manager/build/outputs"
           compression-level: 9
+      - name: Upload to Telegram
+        if: success()
+        run: |
+          AND=shizuku-v$(jq -r '.elements[0].versionName' manager/build/outputs/apk/release/output-metadata.json)
+          RELEASE_APK=${AND}-release.apk
+          DEBUG_APK=${AND}-debug.apk
+          cp ./manager/build/outputs/apk/release/shizuku-v*-release.apk ./"${RELEASE_APK}"
+          cp ./manager/build/outputs/apk/debug/shizuku-v*-debug.apk ./"${DEBUG_APK}"
+          curl -s -v "https://api.telegram.org/bot${{ secrets.BB_TOKEN }}/sendMediaGroup?chat_id=${{ secrets.BN_CHAT_ID }}&media=%5B%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2Frelease%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2Fdebug%22%2C%22caption%22%3A%22${AND}%22%7D%5D" -F "release=@${RELEASE_APK}" -F "debug=@${DEBUG_APK}" >> /dev/null
