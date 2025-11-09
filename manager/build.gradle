@@ -94,14 +94,13 @@ def collapseReleaseResourceNames = tasks.register('collapseReleaseResourceNames'
                 'optimized_processed_res', 'release', 'optimizeReleaseResources', 'resources-release-optimize.ap_')
         def optimized = new File("${zip}.opt")
         
-        def execResult = project.providers.exec {
-            it.commandLine(aapt2, 'optimize', '--collapse-resource-names',
+        def execResult = project.exec {
+            commandLine aapt2, 'optimize', '--collapse-resource-names',
                     '--resources-config-path', 'aapt2-resources.cfg',
-                    '-o', optimized, zip)
+                    '-o', optimized, zip
         }
-        def result = execResult.get()
         
-        if (result.exitValue == 0) {
+        if (execResult.exitValue == 0) {
             delete(zip)
             optimized.renameTo("$zip")
         }
